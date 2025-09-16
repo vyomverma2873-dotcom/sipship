@@ -1,5 +1,4 @@
 const asyncHandler = require("express-async-handler");
-const crypto = require("crypto");
 const User = require("../models/userModel");
 const sendEmail = require("../utils/sendEmail");
 
@@ -51,7 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const verifyUser = asyncHandler(async (req, res) => {
   const { email, code } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("+password");
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
@@ -65,9 +64,13 @@ const verifyUser = asyncHandler(async (req, res) => {
     user.verificationCodeExpire = undefined;
     await user.save();
 
+    // ✅ return user with token so auto-login works
     return res.json({
-      success: true,
-      message: "Account verified successfully. You can now login.",
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      token: user.getSignedJwtToken(),
     });
   } else {
     return res.status(400).json({ message: "Invalid or expired OTP" });
@@ -94,7 +97,6 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: "Invalid email or password" });
   }
 
-  // ✅ Successful login
   return res.status(200).json({
     _id: user._id,
     name: user.name,

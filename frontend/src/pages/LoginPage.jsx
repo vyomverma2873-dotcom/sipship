@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // ✅ context ka use
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -20,11 +20,9 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const data = await login(formData.email, formData.password);
-      console.log("✅ Login Response:", data);
+      await login(formData.email, formData.password);
       navigate("/");
     } catch (err) {
-      console.error("❌ Login error:", err.message);
       setError(err.message || "Invalid credentials.");
     } finally {
       setIsSubmitting(false);
@@ -36,38 +34,28 @@ const LoginPage = () => {
       <div className="container-custom max-w-md mx-auto">
         <div className="bg-secondary rounded-lg shadow-lg p-8">
           <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
-
           {error && (
-            <div className="mb-4 p-3 bg-red-800/50 text-red-200 rounded">
-              {error}
-            </div>
+            <div className="mb-4 p-3 bg-red-800/50 text-red-200 rounded">{error}</div>
           )}
-
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block mb-2 font-medium">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md"
-              />
-            </div>
-
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+              className="w-full px-4 py-2 mb-4 bg-primary border border-gray-600 rounded-md"
+            />
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required
+              className="w-full px-4 py-2 mb-6 bg-primary border border-gray-600 rounded-md"
+            />
             <button
               type="submit"
               disabled={isSubmitting}
@@ -76,15 +64,12 @@ const LoginPage = () => {
               {isSubmitting ? "Logging in..." : "Login"}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p>
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-accent hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </div>
+          <p className="mt-6 text-center">
+            Don’t have an account?{" "}
+            <Link to="/signup" className="text-accent hover:underline">
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>

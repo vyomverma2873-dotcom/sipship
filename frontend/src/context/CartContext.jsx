@@ -64,7 +64,7 @@ const cartReducer = (state, action) => {
   }
 };
 
-// ✅ Safe localStorage getter (stale data handle karta hai)
+// ✅ Safe localStorage getter
 const getFromLocalStorage = (key, defaultValue) => {
   try {
     const saved = localStorage.getItem(key);
@@ -83,12 +83,11 @@ export const CartProvider = ({ children }) => {
 
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // ✅ Save cart items to localStorage whenever they change
+  // ✅ Save to localStorage
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
   }, [state.cartItems]);
 
-  // ✅ Save shipping address
   useEffect(() => {
     localStorage.setItem(
       "shippingAddress",
@@ -96,7 +95,6 @@ export const CartProvider = ({ children }) => {
     );
   }, [state.shippingAddress]);
 
-  // ✅ Save payment method
   useEffect(() => {
     localStorage.setItem("paymentMethod", JSON.stringify(state.paymentMethod));
   }, [state.paymentMethod]);
@@ -106,8 +104,8 @@ export const CartProvider = ({ children }) => {
     dispatch({
       type: "ADD_TO_CART",
       payload: {
-        _id: product._id,            // frontend ke liye
-        product: product._id,        // 👈 backend ke liye required field
+        _id: product._id,        // frontend
+        product: product._id,    // backend ke liye (Order ref)
         name: product.name,
         image: product.image,
         price: product.price,
@@ -136,7 +134,7 @@ export const CartProvider = ({ children }) => {
   // 👉 Clear cart
   const clearCart = () => {
     dispatch({ type: "CLEAR_CART" });
-    localStorage.removeItem("cartItems"); // ✅ storage se bhi clear
+    localStorage.removeItem("cartItems");
   };
 
   // 👉 Save shipping address

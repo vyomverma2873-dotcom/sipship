@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import ContactPage from "./pages/ContactPage";
@@ -21,18 +22,12 @@ import NotAllowedPage from "./pages/NotAllowedPage";
 
 function AppContent() {
   const location = useLocation();
-
-  // Conditions
   const isNotAllowedPage = location.pathname === "/not-allowed";
-  const hideAgePopup = isNotAllowedPage;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#37353E] text-[#D3DAD9]">
-      {/* 👇 Navbar hide on /not-allowed */}
       {!isNotAllowedPage && <Navbar />}
-
-      {/* 👇 Age popup also hide on /not-allowed */}
-      {!hideAgePopup && <AgeVerification />}
+      {!isNotAllowedPage && <AgeVerification />}
 
       <main className="flex-grow">
         <Routes>
@@ -40,6 +35,7 @@ function AppContent() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/profile" element={<ProfilePage />} />
@@ -47,13 +43,10 @@ function AppContent() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/offers" element={<OffersPage />} />
-
-          {/* Not Allowed Page */}
           <Route path="/not-allowed" element={<NotAllowedPage />} />
         </Routes>
       </main>
 
-      {/* 👇 Footer always show */}
       <Footer />
     </div>
   );

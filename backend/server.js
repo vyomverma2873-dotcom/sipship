@@ -1,13 +1,15 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 const connectDB = require("./config/db");
 const productRoutes = require("./routes/productRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-dotenv.config();
+// ✅ Load env from backend/.env
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 // ✅ MongoDB Connect
 connectDB();
@@ -21,8 +23,8 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      /http:\/\/localhost:\d+$/,          // allow any localhost port (dev)
-      "https://sipship.onrender.com"      // deployed frontend (Render)
+      /http:\/\/localhost:\d+$/, // allow any localhost port (dev)
+      "https://sipship.onrender.com", // deployed frontend (Render)
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -49,4 +51,5 @@ const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log("Loaded MONGO_URI:", process.env.MONGO_URI); // Debugging log
 });

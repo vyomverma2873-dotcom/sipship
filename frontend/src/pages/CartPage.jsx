@@ -1,7 +1,5 @@
 import { useCart } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useState } from "react";
 
 const CartPage = () => {
   const {
@@ -9,73 +7,10 @@ const CartPage = () => {
     removeFromCart,
     updateCartQuantity,
     cartTotals,
-    shippingAddress,
-    paymentMethod,
-    clearCart,
   } = useCart();
 
   const { itemsPrice, shippingPrice, taxPrice, totalPrice } = cartTotals();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-
-  const handlePlaceOrder = async () => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-
-    if (!userInfo) {
-      alert("Please login first!");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      };
-
-      const { data } = await axios.post(
-        "http://localhost:5001/api/orders",
-        {
-          orderItems: cartItems.map((item) => ({
-            name: item.name,
-            qty: item.qty,
-            image: item.image,
-            price: item.price,
-            product: item.product, // 👈 backend ke liye ObjectId
-          })),
-          shippingAddress: shippingAddress || {
-            address: "Ghaziabad",
-            city: "Ghaziabad",
-            postalCode: "201002",
-            country: "India",
-          },
-          paymentMethod: paymentMethod || "COD",
-          itemsPrice,
-          taxPrice,
-          shippingPrice,
-          totalPrice,
-        },
-        config
-      );
-
-      console.log("✅ Order placed:", data);
-      alert("Order placed successfully!");
-      clearCart();
-      navigate("/orders");
-    } catch (error) {
-      console.error("❌ Failed to place order:", error);
-      alert(
-        error.response?.data?.message ||
-          "Failed to place order. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="bg-primary text-highlight py-12">
@@ -163,11 +98,10 @@ const CartPage = () => {
                   </div>
                 </div>
                 <button
-                  onClick={handlePlaceOrder}
-                  disabled={loading}
+                  onClick={() => navigate("/checkout")}
                   className="btn-primary w-full py-3"
                 >
-                  {loading ? "Processing..." : "Place Order"}
+                  Proceed to Checkout
                 </button>
               </div>
             </div>

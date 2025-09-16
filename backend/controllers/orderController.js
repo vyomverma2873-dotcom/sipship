@@ -1,5 +1,6 @@
-const asyncHandler = require('express-async-handler');
-const Order = require('../models/orderModel');
+const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
+const Order = require("../models/orderModel");
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -15,41 +16,53 @@ const addOrderItems = asyncHandler(async (req, res) => {
     totalPrice,
   } = req.body;
 
-  if (orderItems && orderItems.length === 0) {
+  console.log("📦 Incoming Order Payload:");
+  console.log("orderItems:", orderItems);
+  console.log("shippingAddress:", shippingAddress);
+  console.log("paymentMethod:", paymentMethod);
+
+  if (!orderItems || orderItems.length === 0) {
     res.status(400);
-    throw new Error('No order items');
-  } else {
-    const order = new Order({
-      orderItems,
-      user: req.user._id,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
-    });
-
-    const createdOrder = await order.save();
-
-    res.status(201).json(createdOrder);
+    throw new Error("No order items");
   }
+
+  // ✅ Validate product IDs
+  const fixedOrderItems = orderItems.map((item) => {
+    if (!mongoose.Types.ObjectId.isValid(item.product)) {
+      console.error("❌ Invalid product ID:", item.product);
+      throw new Error(`Invalid product ID: ${item.product}`);
+    }
+    return { ...item, product: new mongoose.Types.ObjectId(item.product) };
+  });
+
+  const order = new Order({
+    orderItems: fixedOrderItems,
+    user: req.user._id,
+    shippingAddress,
+    paymentMethod,
+    itemsPrice,
+    taxPrice,
+    shippingPrice,
+    totalPrice,
+  });
+
+  const createdOrder = await order.save();
+  console.log("✅ Order Created:", createdOrder._id);
+
+  res.status(201).json(createdOrder);
 });
 
 // @desc    Get order by ID
 // @route   GET /api/orders/:id
 // @access  Private
 const getOrderById = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id).populate(
-    'user',
-    'name email'
-  );
+  const order = await Order.findById(req.params.id).populate("user", "name email");
 
   if (order) {
     res.json(order);
   } else {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 });
 
@@ -66,15 +79,14 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
       id: req.body.id,
       status: req.body.status,
       update_time: req.body.update_time,
-      email_address: req.body.payer.email_address,
+      email_address: req.body.payer?.email_address,
     };
 
     const updatedOrder = await order.save();
-
     res.json(updatedOrder);
   } else {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 });
 
@@ -89,11 +101,10 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
     order.deliveredAt = Date.now();
 
     const updatedOrder = await order.save();
-
     res.json(updatedOrder);
   } else {
     res.status(404);
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 });
 
@@ -109,7 +120,7 @@ const getMyOrders = asyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Private/Admin
 const getOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({}).populate('user', 'id name');
+  const orders = await Order.find({}).populate("user", "id name");
   res.json(orders);
 });
 

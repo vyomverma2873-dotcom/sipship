@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-import API from "../api"; // ✅ use centralized axios instance
+import API from "../api";
 
 const AuthContext = createContext();
 
@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  // ✅ Sync localStorage
   useEffect(() => {
     if (state.userInfo) {
       localStorage.setItem("userInfo", JSON.stringify(state.userInfo));
@@ -44,13 +45,23 @@ export const AuthProvider = ({ children }) => {
     }
   }, [state.userInfo]);
 
-  // ✅ Login user
+  // ✅ Login
   const login = async (email, password) => {
     try {
       dispatch({ type: "SET_LOADING" });
       const { data } = await API.post("/users/login", { email, password });
-      dispatch({ type: "LOGIN", payload: data });
-      return data;
+
+      // 👉 Ensure name + token always present
+      const userData = {
+        _id: data._id,
+        name: data.name || "User",
+        email: data.email,
+        isAdmin: data.isAdmin,
+        token: data.token,
+      };
+
+      dispatch({ type: "LOGIN", payload: userData });
+      return userData;
     } catch (error) {
       const message = error.response?.data?.message || "Login failed";
       dispatch({ type: "AUTH_ERROR", payload: message });
@@ -58,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Register user
+  // ✅ Register
   const register = async (name, email, password) => {
     try {
       dispatch({ type: "SET_LOADING" });
@@ -71,13 +82,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Verify email with OTP
+  // ✅ Verify OTP
   const verifyEmail = async (email, code) => {
     try {
       dispatch({ type: "SET_LOADING" });
       const { data } = await API.post("/users/verify", { email, code });
-      dispatch({ type: "REGISTER", payload: data });
-      return data;
+
+      const userData = {
+        _id: data._id,
+        name: data.name || "User",
+        email: data.email,
+        isAdmin: data.isAdmin,
+        token: data.token,
+      };
+
+      dispatch({ type: "REGISTER", payload: userData });
+      return userData;
     } catch (error) {
       const message = error.response?.data?.message || "Verification failed";
       dispatch({ type: "AUTH_ERROR", payload: message });
@@ -85,26 +105,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Logout
   const logout = () => {
     localStorage.removeItem("userInfo");
     dispatch({ type: "LOGOUT" });
   };
 
-  // ✅ Update Profile
   const updateProfile = async (userData) => {
     try {
       dispatch({ type: "SET_LOADING" });
       const { data } = await API.put("/users/profile", userData, {
-        headers: {
-          Authorization: `Bearer ${state.userInfo.token}`,
-        },
+        headers: { Authorization: `Bearer ${state.userInfo.token}` },
       });
-      dispatch({
-        type: "UPDATE_PROFILE",
-        payload: { ...data, token: state.userInfo.token },
-      });
-      return data;
+
+      const updated = { ...data, token: state.userInfo.token };
+      dispatch({ type: "UPDATE_PROFILE", payload: updated });
+      return updated;
     } catch (error) {
       const message = error.response?.data?.message || "Profile update failed";
       dispatch({ type: "AUTH_ERROR", payload: message });

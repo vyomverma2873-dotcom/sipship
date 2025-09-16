@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../api"; // ✅ backend API instance
+import { useAuth } from "../context/AuthContext"; // ✅ auth context use
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -14,16 +14,12 @@ const SignupPage = () => {
   const [error, setError] = useState("");
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
+  const { register, verifyEmail, login } = useAuth(); // ✅ context functions
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  const handleOtpChange = (e) => setOtp(e.target.value);
 
   // ✅ Registration handler
   const handleSubmit = async (e) => {
@@ -38,42 +34,28 @@ const SignupPage = () => {
     }
 
     try {
-      const { data } = await API.post("/users", {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
-
-      console.log("✅ Signup Response:", data);
+      await register(formData.name, formData.email, formData.password);
       setStep(2); // OTP step
     } catch (err) {
-      console.error("❌ Signup error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ✅ OTP Verification handler
+  // ✅ OTP Verification + Auto Login
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
 
     try {
-      const { data } = await API.post("/users/verify", {
-        email: formData.email,
-        code: otp,
-      });
-
-      console.log("✅ Verification Response:", data);
-      alert("Account verified successfully!");
-      navigate("/login");
+      await verifyEmail(formData.email, otp); // backend pe verify
+      // ✅ Auto login with same credentials
+      await login(formData.email, formData.password);
+      navigate("/"); // home pe bhej de
     } catch (err) {
-      console.error("❌ OTP error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Invalid OTP. Please try again.");
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -86,66 +68,46 @@ const SignupPage = () => {
           {step === 1 ? (
             <>
               <h1 className="text-3xl font-bold mb-6 text-center">Sign Up</h1>
-
               {error && (
-                <div className="mb-4 p-3 bg-red-800/50 text-red-200 rounded">
-                  {error}
-                </div>
+                <div className="mb-4 p-3 bg-red-800/50 text-red-200 rounded">{error}</div>
               )}
-
               <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <label className="block mb-2 font-medium">Full Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block mb-2 font-medium">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block mb-2 font-medium">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    minLength="6"
-                    className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md"
-                  />
-                </div>
-
-                <div className="mb-6">
-                  <label className="block mb-2 font-medium">
-                    Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    minLength="6"
-                    className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md"
-                  />
-                </div>
-
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Full Name"
+                  required
+                  className="w-full px-4 py-2 mb-4 bg-primary border border-gray-600 rounded-md"
+                />
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  required
+                  className="w-full px-4 py-2 mb-4 bg-primary border border-gray-600 rounded-md"
+                />
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  required
+                  className="w-full px-4 py-2 mb-4 bg-primary border border-gray-600 rounded-md"
+                />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm Password"
+                  required
+                  className="w-full px-4 py-2 mb-6 bg-primary border border-gray-600 rounded-md"
+                />
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -154,56 +116,41 @@ const SignupPage = () => {
                   {isSubmitting ? "Signing up..." : "Sign Up"}
                 </button>
               </form>
-
-              <div className="mt-6 text-center">
-                <p>
-                  Already have an account?{" "}
-                  <Link to="/login" className="text-accent hover:underline">
-                    Login
-                  </Link>
-                </p>
-              </div>
+              <p className="mt-6 text-center">
+                Already have an account?{" "}
+                <Link to="/login" className="text-accent hover:underline">
+                  Login
+                </Link>
+              </p>
             </>
           ) : (
             <>
-              <h1 className="text-3xl font-bold mb-6 text-center">
-                Verify Email
-              </h1>
+              <h1 className="text-3xl font-bold mb-6 text-center">Verify Email</h1>
               <p className="mb-6 text-center">
-                We've sent a verification code to{" "}
+                We’ve sent a verification code to{" "}
                 <span className="text-accent">{formData.email}</span>.
               </p>
-
               {error && (
-                <div className="mb-4 p-3 bg-red-800/50 text-red-200 rounded">
-                  {error}
-                </div>
+                <div className="mb-4 p-3 bg-red-800/50 text-red-200 rounded">{error}</div>
               )}
-
               <form onSubmit={handleVerifyOtp}>
-                <div className="mb-6">
-                  <label className="block mb-2 font-medium">
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    value={otp}
-                    onChange={handleOtpChange}
-                    required
-                    maxLength="6"
-                    className="w-full px-4 py-2 bg-primary border border-gray-600 rounded-md text-center text-2xl"
-                  />
-                </div>
-
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  maxLength="6"
+                  required
+                  className="w-full px-4 py-2 mb-6 bg-primary border border-gray-600 rounded-md text-center text-2xl"
+                />
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="btn-primary w-full py-3"
                 >
-                  {isSubmitting ? "Verifying..." : "Verify"}
+                  {isSubmitting ? "Verifying..." : "Verify & Login"}
                 </button>
               </form>
-
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setStep(1)}
