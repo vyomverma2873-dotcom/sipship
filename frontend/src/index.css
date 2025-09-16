@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+
+  /* Gradient background for poore page */
+  background: linear-gradient(135deg, #37353E, #44444E, #715A5A, #D3DAD9);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: inherit; /* same gradient apply hoga */
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4;
+  }
+
+  .btn-primary {
+    @apply bg-accent hover:bg-accent/90 text-white font-medium py-2 px-4 rounded transition-all duration-300;
+  }
+
+  .card {
+    @apply bg-secondary rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300;
+  }
+}
