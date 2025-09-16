@@ -15,7 +15,7 @@ import ContactPage from "./pages/ContactPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
 import AboutPage from "./pages/AboutPage";
-import OffersPage from "./pages/offersPage";
+import offersPage from "./pages/offersPage";
 
 
  // 👈 NEW
