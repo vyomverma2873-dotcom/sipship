@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext"; // ✅ context ka use
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useAuth(); // ✅ context se login
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -20,7 +20,7 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const data = await login(formData.email, formData.password); // ✅ context ka login
+      const data = await login(formData.email, formData.password);
       console.log("✅ Login Response:", data);
       navigate("/");
     } catch (err) {

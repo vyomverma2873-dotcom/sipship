@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-import axios from "axios";
+import API from "../api"; // ✅ use centralized axios instance
 
 const AuthContext = createContext();
 
@@ -48,13 +48,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       dispatch({ type: "SET_LOADING" });
-
-      const { data } = await axios.post(
-        "/api/users/login",
-        { email, password },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
+      const { data } = await API.post("/users/login", { email, password });
       dispatch({ type: "LOGIN", payload: data });
       return data;
     } catch (error) {
@@ -68,13 +62,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       dispatch({ type: "SET_LOADING" });
-
-      const { data } = await axios.post(
-        "/api/users",
-        { name, email, password },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
+      const { data } = await API.post("/users", { name, email, password });
       return data;
     } catch (error) {
       const message = error.response?.data?.message || "Registration failed";
@@ -87,13 +75,7 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (email, code) => {
     try {
       dispatch({ type: "SET_LOADING" });
-
-      const { data } = await axios.post(
-        "/api/users/verify",
-        { email, code },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
+      const { data } = await API.post("/users/verify", { email, code });
       dispatch({ type: "REGISTER", payload: data });
       return data;
     } catch (error) {
@@ -113,15 +95,15 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (userData) => {
     try {
       dispatch({ type: "SET_LOADING" });
-
-      const { data } = await axios.put("/api/users/profile", userData, {
+      const { data } = await API.put("/users/profile", userData, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${state.userInfo.token}`,
         },
       });
-
-      dispatch({ type: "UPDATE_PROFILE", payload: { ...data, token: state.userInfo.token } });
+      dispatch({
+        type: "UPDATE_PROFILE",
+        payload: { ...data, token: state.userInfo.token },
+      });
       return data;
     } catch (error) {
       const message = error.response?.data?.message || "Profile update failed";

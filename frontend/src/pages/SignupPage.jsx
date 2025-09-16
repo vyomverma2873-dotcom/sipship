@@ -38,7 +38,7 @@ const SignupPage = () => {
     }
 
     try {
-      const { data } = await API.post("/api/users", {
+      const { data } = await API.post("/users", {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -63,7 +63,7 @@ const SignupPage = () => {
     setError("");
 
     try {
-      const { data } = await API.post("/api/users/verify", {
+      const { data } = await API.post("/users/verify", {
         email: formData.email,
         code: otp,
       });
@@ -221,5 +221,3 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
-
-
