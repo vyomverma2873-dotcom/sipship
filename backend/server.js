@@ -17,10 +17,13 @@ const app = express();
 // ✅ Middleware
 app.use(express.json());
 
-// ✅ CORS Setup – allow any localhost:* (5173, 5174, 5175 etc.)
+// ✅ CORS Setup – allow localhost (dev) + Render frontend (prod)
 app.use(
   cors({
-    origin: [/http:\/\/localhost:\d+$/], // regex: allow all localhost ports
+    origin: [
+      /http:\/\/localhost:\d+$/,          // allow any localhost port (dev)
+      "https://sipship.onrender.com"      // deployed frontend (Render)
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -41,8 +44,8 @@ app.get("/", (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// ✅ Port (hardcode 5001 for backend)
-const PORT = 5001;
+// ✅ Port (hardcode 5001 for backend in local, Render ignores this)
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
