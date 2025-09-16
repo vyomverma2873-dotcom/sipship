@@ -15,10 +15,10 @@ import ContactPage from "./pages/ContactPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrdersPage from "./pages/OrdersPage";
 import AboutPage from "./pages/AboutPage";
-import offersPage from "./pages/offersPage";
+import OffersPage from "./pages/OffersPage";
 
 
- // 👈 NEW
+// 👈 NEW
 
 function App() {
   return (
@@ -39,7 +39,7 @@ function App() {
                 <Route path="/orders" element={<OrdersPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="/offers" element={<OffersPage />} /> {/* 👈 NEW */}
+                <Route path="/offers" element={<OffersPage />} /> {/* ✅ FIXED */}
               </Routes>
             </main>
             <Footer />
