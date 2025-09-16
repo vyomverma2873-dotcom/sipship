@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -11,7 +12,16 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ["axios", "react-router-dom"], // 👈 ye add kiya
+      // ❌ axios / react-router-dom ko hata do
+      // ✅ sirf Node built-ins ya backend related cheezein daalni hain
+      external: [
+        "fs",
+        "path",
+        "os",
+        "crypto",
+        "stream",
+        "util",
+      ],
     },
   },
 });
