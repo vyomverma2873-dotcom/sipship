@@ -2,28 +2,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
 
 // Create Express app
 const app = express();
 
-// ✅ CORS Setup – allow localhost (dev) + deployed frontend (Render)
-app.use(
-  cors({
-    origin: [
-      /http:\/\/localhost:\d+$/,         // ✅ any localhost port
-      "https://sipship.onrender.com",    // ✅ deployed frontend
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Import routes
@@ -41,20 +28,18 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// ✅ Connect to MongoDB
-const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/sipandship';
-
+// Connect to MongoDB
 mongoose
-  .connect(mongoURI)
+  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sipandship')
   .then(() => {
-    console.log(`✅ Connected to MongoDB: ${mongoURI}`);
+    console.log('Connected to MongoDB');
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
+    console.error('MongoDB connection error:', err);
   });
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
