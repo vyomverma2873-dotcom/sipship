@@ -1,13 +1,13 @@
 // frontend/src/axiosConfig.js
 import axios from "axios";
 
-// ✅ Axios instance for API calls
+// ✅ Always point to deployed backend in production
 const api = axios.create({
   baseURL:
     import.meta.env.MODE === "development"
-      ? "http://localhost:5001" // Local backend
-      : "https://sipship-backend.onrender.com", // Deployed backend
-  withCredentials: true,
+      ? "http://localhost:5001" // local backend
+      : "https://sipship-backend.onrender.com", // deployed backend
+  withCredentials: false, // ❌ JWT is in localStorage, no cookies
 });
 
 export default api;

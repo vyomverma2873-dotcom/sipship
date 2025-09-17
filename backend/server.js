@@ -1,55 +1,58 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const path = require("path");
-const connectDB = require("./config/db");
-const productRoutes = require("./routes/productRoutes");
-const userRoutes = require("./routes/userRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const path = require('path');
 
-// ✅ Load env from backend/.env
-dotenv.config({ path: path.join(__dirname, ".env") });
+// Load environment variables
+dotenv.config({ path: path.join(__dirname, '.env') });
 
-// ✅ MongoDB Connect
-connectDB();
-
+// Create Express app
 const app = express();
 
-// ✅ Middleware
-app.use(express.json());
-
-// ✅ CORS Setup – allow localhost (dev) + Render frontend (prod)
+// ✅ CORS Setup – allow local + deployed frontend
 app.use(
   cors({
     origin: [
-      /http:\/\/localhost:\d+$/, // allow any localhost port (dev)
-      "https://sipship.onrender.com", // deployed frontend (Render)
+      "http://localhost:5173",       // local frontend (vite default)
+      "https://sipship.onrender.com" // deployed frontend
     ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false, // ❌ no cookies needed, JWT is in localStorage
   })
 );
 
-// ✅ API Routes
-app.use("/api/products", productRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/orders", orderRoutes);
+// Middleware
+app.use(express.json());
 
-// ✅ Test route
-app.get("/", (req, res) => {
-  res.send("API is running...");
+// Import routes
+const productRoutes = require('./routes/productRoutes');
+const userRoutes = require('./routes/userRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+
+// Use routes
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
+
+// Root route
+app.get('/', (req, res) => {
+  res.send('API is running...');
 });
 
-// ✅ Error Handling Middlewares
-app.use(notFound);
-app.use(errorHandler);
+// ✅ Connect to MongoDB
+const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/sipandship';
 
-// ✅ Port (hardcode 5001 for backend in local, Render ignores this)
-const PORT = process.env.PORT || 5001;
+mongoose
+  .connect(mongoURI)
+  .then(() => {
+    console.log(`✅ Connected to MongoDB: ${mongoURI}`);
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err.message);
+  });
 
+// Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log("Loaded MONGO_URI:", process.env.MONGO_URI); // Debugging log
 });
